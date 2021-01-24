@@ -276,7 +276,7 @@ Timer.repeat(() => {
 
 // On initialization, set background to blue
 render.begin();
-	render.fillRectangle(backgroundColor, 0, 0, render.width, render.height);
+    render.fillRectangle(backgroundColor, 0, 0, render.width, render.height);
 render.end();
 
 // Set up a timer to redraw screen once a second.
@@ -284,28 +284,28 @@ render.end();
 Timer.repeat(id => {
 
     // Start render
-	render.begin(bounds.x, bounds.y, bounds.width, bounds.height);
+    render.begin(bounds.x, bounds.y, bounds.width, bounds.height);
     {
 
         // Split the radiation level into digits
         let l = radiationLevelIn;
-		let u = l % 10;
+        let u = l % 10;
         l = (l-u) / 10;
-		let t = l % 10;
+        let t = l % 10;
         l = (l-t)/10;
-		let h = l % 10;
+        let h = l % 10;
         l = (l-h)/10;
-		let k = l % 10;
+        let k = l % 10;
 
-		let x = bounds.x;
-		let y = bounds.y;
+        let x = bounds.x;
+        let y = bounds.y;
 
         // Fill all background
-		render.fillRectangle(backgroundColor, 0, 0, 
+        render.fillRectangle(backgroundColor, 0, 0, 
                              render.width, render.height);
 
         // Thousands
-		render.drawGray(digits, 
+        render.drawGray(digits, 
                         digitsColor, 
                         x, 
                         y, 
@@ -314,29 +314,29 @@ Timer.repeat(id => {
                         digitWidth, 
                         digitHeight);
 
-		x += digitWidth;
+        x += digitWidth;
     
         // Hundreds
-		render.drawGray(digits, 
+        render.drawGray(digits, 
                         digitsColor, 
                         x, 
                         y, 
                         h * digitWidth, 
                         0, digitWidth, digitHeight);
-		x += digitWidth;
+        x += digitWidth;
 
         // Tens 
-		render.drawGray(digits, digitsColor, x, y, 
+        render.drawGray(digits, digitsColor, x, y, 
                         t * digitWidth, 0, digitWidth, digitHeight);
-		x += digitWidth;
+        x += digitWidth;
 
         // Units 
-		render.drawGray(digits, digitsColor, x, y, 
+        render.drawGray(digits, digitsColor, x, y, 
                         u * digitWidth, 0, digitWidth, digitHeight);
 
     // Stop render
     }
-	render.end();
+    render.end();
 
 }, 500);
 
