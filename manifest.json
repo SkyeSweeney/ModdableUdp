@@ -11,9 +11,5 @@
 
     "resources": {
         "*-alpha": "./digits"
-    },
-
-    "config": {
-        "sntp": "pool.ntp.org"
     }
 }
