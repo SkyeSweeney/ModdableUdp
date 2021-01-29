@@ -1,13 +1,14 @@
 {
-	"include": [
-		"$(MODDABLE)/examples/manifest_base.json",
-		"$(MODDABLE)/examples/manifest_net.json",
+    "include": [
+        "$(MODDABLE)/examples/manifest_base.json",
+        "$(MODDABLE)/examples/manifest_net.json",
         "$(MODDABLE)/examples/manifest_commodetto.json"
-	],
+    ],
 
-	"modules": {
-		"main": "./main"
-	},
+    "modules": {
+        "main": "./main",
+        "structures": "./Structures"
+    },
 
     "resources": {
         "*-alpha": "./digits"

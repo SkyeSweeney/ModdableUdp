@@ -1,0 +1,24 @@
+
+struct Header_t {
+    uint16_t      msgId;
+    uint8_t       version;
+    uint8_t       flags;
+    uint16_t      source;
+    uint16_t      spare;
+}
+
+struct  EnvBody_t {
+    float       temperature;
+    float       pressure;
+    float       humidity;
+    uint16_t    radiationLevel;
+}
+
+#pragma checkByteLength(false)
+struct Messages_t {
+    Header_t    header;
+    union {
+        EnvBody_t  envBody;
+    }
+}
+
