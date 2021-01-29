@@ -6,9 +6,15 @@
     ],
 
     "modules": {
-        "main": "./main",
-        "structures": "./Structures"
+        "*": [
+            "./main",
+            "./dataviews"
+        ]    
     },
+
+    "preload": [
+        "dataviews"
+    ],
 
     "resources": {
         "*-alpha": "./digits"

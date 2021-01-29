@@ -103,6 +103,7 @@ import Timer    from "timer";
 import parseBMP from "commodetto/parseBMP";
 import Poco     from "commodetto/Poco";
 import Resource from "Resource";
+import {Messages_t} from "dataviews";
 
 
 // Destination IP address and port  (CHANGE ME TO SUIT)
