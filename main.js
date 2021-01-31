@@ -92,7 +92,7 @@
  *         ...
  *         xyzBody_t  xyzBody;
  *     } body_t;
- * Messages_t;
+ * } Messages_t;
  * #pragma pack(0)
  *
  */
@@ -103,7 +103,7 @@ import Timer    from "timer";
 import parseBMP from "commodetto/parseBMP";
 import Poco     from "commodetto/Poco";
 import Resource from "Resource";
-import {Messages_t} from "dataviews";
+import {MessagesView} from "dataviews";
 
 
 // Destination IP address and port  (CHANGE ME TO SUIT)
@@ -238,32 +238,26 @@ socket.callback = function(message, value, fromIp, fromPort) {
 // Set up a timer to send data to remote echo server
 Timer.repeat(() => {
 
-    // Create an "Environment message"
-    // Message is a total of 22 bytes long. 8 for header, 14 for body
-    let buf         = new ArrayBuffer(22);  
-    let vEnvMsg     = new Uint8Array(buf, 0, 22);
-    let vHdrMsgId   = new Uint16Array(buf, 0, 1);
-    let vHdrVersion = new Uint8Array(buf, 2, 1);
-    let vHdrFlags   = new Uint8Array(buf, 3, 1);
-    let vHdrSource  = new Uint16Array(buf, 4, 1);
-    let vHdrSpare   = new Uint16Array(buf, 6, 1);
-    let vBodyTemperature    = new Float32Array(buf, 8, 1);
-    let vBodyPressure       = new Float32Array(buf, 12, 1);
-    let vBodyHumidity       = new Float32Array(buf, 16, 1);
-    let vBodyRadiationLevel = new Uint16Array(buf, 20, 1);
+    // Create a buffer and then the DataView for that buffer
+    let n = MessagesView.byteLength;
+    let buf = new ArrayBuffer(n);
+    let msg = new MessagesView(buf);
 
-    vHdrMsgId[0]   = 0x1234;  // msgId
-    vHdrVersion[0] = 0x56;    // Version of this message
-    vHdrFlags[0]   = 0x78;    // Special flags (encryption, ...)
-    vHdrSource[0]  = 0xBEEF;  // Sender of message
-    vHdrSpare[0]   = 0xFACE;  // Future growth/padding
-    vBodyTemperature[0]    = tempOut;
-    vBodyPressure[0]       = pressureOut;
-    vBodyHumidity[0]       = humidityOut;
-    vBodyRadiationLevel[0] = radiationLevelOut;
+    // Populate the header
+    msg.header.msgId   = 0x1234;
+    msg.header.version = 0x56;
+    msg.header.flags   = 0x78;
+    msg.header.source  = 0xBEEF;
+    msg.header.spare   = 0xFACE;
 
-    // Send message to remote
-    socket.write(remoteIp, remotePort, vEnvMsg.buffer);
+    // Populate the Environment message
+    msg.envBody.temperature    = tempOut;
+    msg.envBody.pressure       = pressureOut;
+    msg.envBody.humidity       = humidityOut;
+    msg.envBody.radiationLevel = radiationLevelOut;
+
+    // Send the message to the remote computer
+    socket.write(remoteIp, remotePort, msg.buffer);
 
     // Update the values that we will send out next time
     tempOut           += 0.2;
