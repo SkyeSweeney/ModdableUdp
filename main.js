@@ -42,14 +42,26 @@
  *  is read in and the header is examined to determine the message type.
  *  The body of the message is then parsed based on this message type.
  *
- *  To assemble or disassemble messages, the JavaScript ArrayBuffer and data
- *  views mechanism is used. A good web resource is:
- *    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+ *  Assembly and disassembly of messages makes use of JavaScript DataViews
+ *  and the Moddable "compileDataView" project at:
+ *  https://github.com/phoddie/compileDataView/blob/master/readme.md
  *
- *  For this example the message format was defined using C/C++ structures.
- *  A structure for the header, as many as needed for each unique message, and 
- *  a union of all the message types. If you are not aware of language 
- *  dependant "packing" issues or "Endianness" please consult the web.
+ *  This project takes a C-like definition of the binary data you want to
+ *  impose and it creates a series of classes to allow you to gain easy
+ *  access. Just using DataViews is possible but requires lots of failure
+ *  prone bookeeping to keep the offsets straight. The online compiler at:
+ *  https://phoddie.github.io/compileDataView/
+ *  automates the process.
+ *
+ *  The results of this process is the file dataviews.js. This is then used
+ *  in the following code to greatly simplify access to all the message parts.
+ *
+ *  For this example the message format was originaly defined using C/C++ 
+ *  structures. A structure for the header, and as many as needed for each 
+ *  unique message, and a union of all the message types. 
+ *
+ *  If you are not aware of language dependant "packing" issues or "Endianness"
+ *  please consult the web.
  *
  *  UDP sockets are datagrams. Messages must fit the maximum packet size of
  *  normaly around 1500 bytes leaving about 1200 bytes for message data.
@@ -103,6 +115,7 @@ import Timer    from "timer";
 import parseBMP from "commodetto/parseBMP";
 import Poco     from "commodetto/Poco";
 import Resource from "Resource";
+import {HeaderView}   from "dataviews";
 import {MessagesView} from "dataviews";
 
 
@@ -169,39 +182,39 @@ socket.callback = function(message, value, fromIp, fromPort) {
 
             // Read data into a buffer
             const bufIn = this.read(ArrayBuffer);
+            let nIn = bufIn.byteLength;
 
             // Insure it is at least the length of a header
-            if (bufIn.byteLength < 8) {
+            let n = HeaderView.byteLength;
+            trace(`sizeof header ${n}\n`);
+            if (bufIn.byteLength < n) {
                 trace("Header too small\n");
                 break;
             }
 
-            // Decode buffer as header
-            let vHdrMsgId   = new Uint16Array(bufIn, 0, 1);
-            let vHdrVersion = new Uint8Array(bufIn, 2, 1);
-            let vHdrFlags   = new Uint8Array(bufIn, 3, 1);
-            let vHdrSource  = new Uint16Array(bufIn, 4, 1);
-            let vHdrSpare   = new Uint16Array(bufIn, 6, 1);
-            let msgId   = vHdrMsgId[0];
-            let version = vHdrVersion[0];
-            let flags   = vHdrFlags[0];
-            let source  = vHdrSource[0];
-            let spare   = vHdrSpare[0];
+
+            // Apply a HeaderView to the buffer
+            let msgIn = new HeaderView(bufIn.slice(0,n));
+            let msgId   = msgIn.msgId;
+            let version = msgIn.version;
+            let flags   = msgIn.flags;
+            let source  = msgIn.source;
+            let spare   = msgIn.spare;
 
             // Environment message
             if (msgId == 0x1234) {
-                if (bufIn.byteLength != 22) {
+
+                if (nIn != MessagesView.byteLength) {
                     trace("Message 0x1234 body too small\n");
+
                 } else {
                     trace("Received Emvironment Message (0x1234)\n");
-                    let vBodyTemperature    = new Float32Array(bufIn, 8, 1);
-                    let vBodyPressure       = new Float32Array(bufIn, 12, 1);
-                    let vBodyHumidity       = new Float32Array(bufIn, 16, 1);
-                    let vBodyRadiationLevel = new Uint16Array(bufIn, 20, 1);
-                    tempIn           = vBodyTemperature[0];
-                    pressureIn       = vBodyPressure[0];
-                    humidityIn       = vBodyHumidity[0];
-                    radiationLevelIn = vBodyRadiationLevel[0];
+
+                    let envMsg = new MessagesView(bufIn);
+                    tempIn           = envMsg.envBody.temperature;
+                    pressureIn       = envMsg.envBody.pressure;
+                    humidityIn       = envMsg.envBody.humidity;
+                    radiationLevelIn = envMsg.envBody.radiationLevel;
                 }
             
             // Some other message
